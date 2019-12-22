@@ -48,7 +48,43 @@ resource "azurerm_eventhub_authorization_rule" "eventhubconsumer" {
     send = false
     manage = false
 }
+# Create an Azure SQL server for PostgreSQL
+resource "random_password" "dbpassword" {
+    length = 16
+    special = true
+    override_special = "_%@"
+}
+module "postgresql" {
+  source              = "Azure/postgresql/azurerm"
 
+    resource_group_name = "${azurerm_resource_group.rg.name}"
+    location            = "${azurerm_resource_group.rg.location}"
+
+    server_name = "cdsterraform"
+    sku_name = "GP_Gen5_2"
+    sku_capacity = 2
+    sku_tier = "GeneralPurpose"
+    sku_family = "Gen5"
+
+    storage_mb = 5120
+    backup_retention_days = 7
+    geo_redundant_backup = "Disabled"
+
+    administrator_login = "cdsterraform"
+    administrator_password = "${random_password.dbpassword.result}"
+
+    server_version = "9.5"
+    ssl_enforcement = "Enabled"
+
+    db_names = ["customer", "deliveryaddress", "pbl"]
+    db_charset = "UTF8"
+    db_collation = "English_United States.1252"
+
+    firewall_rule_prefix = "firewall-"
+    firewall_rules = [
+        {name="cds-terraform", start_ip="0.0.0.0", end_ip="0.0.0.0"},
+    ]
+}
 # Create a Service Principal to be register in AKS
 module "service-principal" {
     source  = "innovationnorway/service-principal/azuread"
