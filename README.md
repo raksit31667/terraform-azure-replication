@@ -1,0 +1,1 @@
+# Terraform Azure for Data Replication
