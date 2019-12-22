@@ -30,6 +30,25 @@ resource "azurerm_eventhub" "eventhub" {
     partition_count = 3
     message_retention = 1
 }
+resource "azurerm_eventhub_authorization_rule" "eventhubpublisher" {
+    name = "data-pump"
+    namespace_name = "${azurerm_eventhub_namespace.eventhub.name}"
+    resource_group_name = "${azurerm_resource_group.rg.name}"
+    eventhub_name = "${azurerm_eventhub.eventhub.name}"
+    listen = false
+    send = true
+    manage = false
+}
+resource "azurerm_eventhub_authorization_rule" "eventhubconsumer" {
+    name = "replication-service"
+    namespace_name = "${azurerm_eventhub_namespace.eventhub.name}"
+    resource_group_name = "${azurerm_resource_group.rg.name}"
+    eventhub_name = "${azurerm_eventhub.eventhub.name}"
+    listen = true
+    send = false
+    manage = false
+}
+
 # Create a Service Principal to be register in AKS
 module "service-principal" {
     source  = "innovationnorway/service-principal/azuread"
