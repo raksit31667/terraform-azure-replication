@@ -85,6 +85,19 @@ module "postgresql" {
         {name="cds-terraform", start_ip="0.0.0.0", end_ip="0.0.0.0"},
     ]
 }
+# Create a Azure cache for Redis
+resource "azurerm_redis_cache" "example" {
+    name                = "cdsterraform"
+    location            = "${azurerm_resource_group.rg.location}"
+    resource_group_name = "${azurerm_resource_group.rg.name}"
+    capacity            = 2
+    family              = "P"
+    sku_name            = "Premium"
+    enable_non_ssl_port = false
+    minimum_tls_version = "1.2"
+
+    redis_configuration {}
+}
 # Create a Service Principal to be register in AKS
 module "service-principal" {
     source  = "innovationnorway/service-principal/azuread"
